@@ -4,8 +4,6 @@ import random
 ### things to fix
 # double letters not working
 # better variable manipulation?
-# add keyboard
-# add arguments
 
 INCORRECT = 0
 HALF_CORRECT = 1
@@ -40,6 +38,17 @@ def generate_word_dict(word):
     return dictionary
 
 
+def generate_colored_letter(pos, letter):
+    line = ""
+    if pos == CORRECT:
+        line += "{} {} {}".format(green, letter.upper(), end_color)
+    elif pos == HALF_CORRECT:
+        line += "{} {} {}".format(yellow, letter.upper(), end_color)
+    else:
+        line += " {} ".format(letter.upper())
+    return line
+
+
 def print_grid():
     num_letters = len(final_results[0])
     line_break = "-" * (num_letters * 4 + 1)
@@ -55,20 +64,49 @@ def print_grid():
             else:
                 letter = letter_result[0]
                 pos = letter_result[1]
-
-                line += "|"
-                if pos == CORRECT:
-                    line += "{} {} {}".format(green, letter.upper(), end_color)
-                elif pos == HALF_CORRECT:
-                    line += "{} {} {}".format(yellow, letter.upper(), end_color)
-                else:
-                    line += " {} ".format(letter.upper())
+                line += "|{}".format(generate_colored_letter(pos, letter))
 
         line += "|"
         print(line)
 
     print(line_break)
     return
+
+
+def print_keyboard():
+    dictionary_results = {}
+
+    first_line = 'qwertyuiop'
+    second_line = ' asdfghjkl '
+    third_line = '  zxcvbnm  '
+
+    def _flatten_and_filter(t):
+        flattened_list = [item for sublist in t for item in sublist]
+        return filter(lambda c: c != " ", flattened_list)
+
+    flattened_final_results = _flatten_and_filter(final_results)
+
+    for item in flattened_final_results:
+        letter = item[0]
+        pos = item[1]
+        if letter in dictionary_results:
+            dictionary_results[letter] = max(dictionary_results[letter], pos)
+        else:
+            dictionary_results[letter] = pos
+
+    for keyboard_line in [first_line, second_line, third_line]:
+        line = ""
+        for letter in keyboard_line:
+            if letter != " ":
+                line += "|"
+                if letter in dictionary_results:
+                    line += generate_colored_letter(dictionary_results[letter], letter)
+                else:
+                    line += generate_colored_letter(0, letter)
+            else:
+                line += " "
+        line += "|"
+        print(line)
 
 
 def input_result(word, num):
@@ -147,6 +185,7 @@ def play(num_letters, winning_word, possible_words):
         word = raw_input("type your guess for word {}: ".format(cycle)).lower()
         evaluate_word(word, cycle, possible_words)
         print_grid()
+        print_keyboard()
 
         if word == winning_word:
             print("Congratulations! You've won")
@@ -178,4 +217,5 @@ if __name__ == "__main__":
     final_results = [[" "] * num_letters] * 6
 
     print_grid()
+    print_keyboard()
     play(num_letters, winning_word, possible_words)
