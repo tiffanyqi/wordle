@@ -8,11 +8,13 @@ import random
 INCORRECT = 0
 HALF_CORRECT = 1
 CORRECT = 2
+UNAVAILABLE = 3
 
 
 # colors
 green = '\x1b[6;30;42m'
 yellow = '\x1b[6;30;43m'
+gray = '\x1b[6;30;47m'
 end_color = '\x1b[0m'
 
 
@@ -44,6 +46,8 @@ def generate_colored_letter(pos, letter):
         line += "{} {} {}".format(green, letter.upper(), end_color)
     elif pos == HALF_CORRECT:
         line += "{} {} {}".format(yellow, letter.upper(), end_color)
+    elif pos == INCORRECT:
+        line += "{} {} {}".format(gray, letter.upper(), end_color)
     else:
         line += " {} ".format(letter.upper())
     return line
@@ -102,7 +106,7 @@ def print_keyboard():
                 if letter in dictionary_results:
                     line += generate_colored_letter(dictionary_results[letter], letter)
                 else:
-                    line += generate_colored_letter(0, letter)
+                    line += generate_colored_letter(UNAVAILABLE, letter)
             else:
                 line += " "
         line += "|"
@@ -147,15 +151,15 @@ def input_result(word, num):
 def evaluate_word(word, num, possible_words):
     if len(word) != num_letters:
         result = raw_input("word isn't {} letters, type in another guess: ".format(num_letters))
-        evaluate_word(result, num, possible_words)
+        return evaluate_word(result, num, possible_words)
     
     elif word not in possible_words:
         result = raw_input("word doesn't exist, type in another guess: ")
-        evaluate_word(result, num, possible_words)
+        return evaluate_word(result, num, possible_words)
 
     else:
         input_result(word, num)
-
+        return word
 
 def validate_num_letters():
     try:
@@ -179,11 +183,10 @@ def validate_num_letters():
         validate_num_letters()
 
 
-
 def play(num_letters, winning_word, possible_words):
     for cycle in range(1, num_letters + 2):
         word = raw_input("type your guess for word {}: ".format(cycle)).lower()
-        evaluate_word(word, cycle, possible_words)
+        word = evaluate_word(word, cycle, possible_words)
         print_grid()
         print_keyboard()
 
@@ -212,7 +215,6 @@ if __name__ == "__main__":
         num_letters = validate_num_letters()
 
     possible_words = set_possible_words(num_letters, text_file)
-
     winning_word = random.choice(possible_words)
     final_results = [[" "] * num_letters] * 6
 
