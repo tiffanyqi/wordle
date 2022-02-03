@@ -1,8 +1,11 @@
+import argparse
 import random
 
 ### things to fix
 # double letters not working
 # better variable manipulation?
+# add keyboard
+# add arguments
 
 INCORRECT = 0
 HALF_CORRECT = 1
@@ -15,10 +18,10 @@ yellow = '\x1b[6;30;43m'
 end_color = '\x1b[0m'
 
 
-def set_possible_words(num_letters):
+def set_possible_words(num_letters, text_file):
     results = []
 
-    with open('words.txt') as file:
+    with open(text_file) as file:
         lines = file.read().splitlines()
         for word in lines:
             if len(word) == num_letters:
@@ -28,7 +31,7 @@ def set_possible_words(num_letters):
 
 def generate_word_dict(word):
     dictionary = {}
-    # bc i forgot how to do the one line way to do this
+    # bc i forgot the one line way to do this
     for letter in word:
         if letter in dictionary:
             dictionary[letter] += 1
@@ -45,6 +48,7 @@ def print_grid():
 
         line = ""
         for letter_result in result:
+            # empty state
             if letter_result == " ":
                 line += "|   "
 
@@ -54,11 +58,11 @@ def print_grid():
 
                 line += "|"
                 if pos == CORRECT:
-                    line += "{} {} {}".format(green, letter, end_color)
+                    line += "{} {} {}".format(green, letter.upper(), end_color)
                 elif pos == HALF_CORRECT:
-                    line += "{} {} {}".format(yellow, letter, end_color)
+                    line += "{} {} {}".format(yellow, letter.upper(), end_color)
                 else:
-                    line += " {} ".format(letter)
+                    line += " {} ".format(letter.upper())
 
         line += "|"
         print(line)
@@ -153,9 +157,22 @@ def play(num_letters, winning_word, possible_words):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--all', action='store_true')
+    parser.add_argument('--num', choices=['3', '4', '5', '6', '7', '8', '9', '10'])
+    args = parser.parse_args()
     print("Welcome to Wordle. Let's begin.")
-    num_letters = validate_num_letters()
-    possible_words = set_possible_words(num_letters)
+
+    text_file = '1000.txt'
+    if args.all:
+        text_file = 'words_alpha.txt'
+
+    if args.num:
+        num_letters = int(args.num)
+    else:
+        num_letters = validate_num_letters()
+
+    possible_words = set_possible_words(num_letters, text_file)
 
     winning_word = random.choice(possible_words)
     final_results = [[" "] * num_letters] * 6
